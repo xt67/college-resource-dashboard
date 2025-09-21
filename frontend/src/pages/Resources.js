@@ -50,6 +50,12 @@ const Resources = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [capacityFilter, setCapacityFilter] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
   const [availableOnly, setAvailableOnly] = useState(false);
   
   // Filter options
@@ -206,15 +212,79 @@ const Resources = () => {
     setSearchTerm('');
     setTypeFilter('');
     setLocationFilter('');
-    setAvailableOnly(false);
+    setStatusFilter('');
+    setCapacityFilter('');
+    setSortBy('name');
+    setSortOrder('asc');
   };
 
-  // Filter resources by search term
-  const filteredResources = resources.filter(resource =>
-    resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    resource.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    resource.location?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Advanced filtering and sorting logic
+  const filteredResources = resources
+    .filter(resource => {
+      // Search term filter
+      const matchesSearch = searchTerm === '' || 
+        resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.location?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Type filter
+      const matchesType = typeFilter === '' || resource.type === typeFilter;
+
+      // Location filter
+      const matchesLocation = locationFilter === '' || resource.location === locationFilter;
+
+      // Status filter
+      const matchesStatus = statusFilter === '' || (() => {
+        if (statusFilter === 'available') return resource.status === 'available' && resource.available_count > 0;
+        if (statusFilter === 'unavailable') return resource.status === 'unavailable' || resource.available_count === 0;
+        if (statusFilter === 'maintenance') return resource.status === 'maintenance';
+        return true;
+      })();
+
+      // Capacity filter
+      const matchesCapacity = capacityFilter === '' || (() => {
+        if (capacityFilter === 'small') return resource.capacity <= 5;
+        if (capacityFilter === 'medium') return resource.capacity > 5 && resource.capacity <= 20;
+        if (capacityFilter === 'large') return resource.capacity > 20;
+        return true;
+      })();
+
+      return matchesSearch && matchesType && matchesLocation && matchesStatus && matchesCapacity;
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'type':
+          aValue = a.type.toLowerCase();
+          bValue = b.type.toLowerCase();
+          break;
+        case 'location':
+          aValue = a.location.toLowerCase();
+          bValue = b.location.toLowerCase();
+          break;
+        case 'capacity':
+          aValue = a.capacity;
+          bValue = b.capacity;
+          break;
+        case 'availability':
+          aValue = a.available_count;
+          bValue = b.available_count;
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
 
   const getStatusColor = (status, availableCount) => {
     if (status === 'maintenance') return 'warning';
@@ -264,7 +334,7 @@ const Resources = () => {
           </Alert>
         )}
 
-        {/* Filters */}
+        {/* Advanced Filters */}
         <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={3}>
@@ -311,18 +381,35 @@ const Resources = () => {
             </Grid>
             <Grid item xs={6} md={2}>
               <FormControl fullWidth size="small">
-                <InputLabel>Availability</InputLabel>
+                <InputLabel>Status</InputLabel>
                 <Select
-                  value={availableOnly ? 'available' : ''}
-                  onChange={(e) => setAvailableOnly(e.target.value === 'available')}
-                  label="Availability"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="Status"
                 >
-                  <MenuItem value="">All Resources</MenuItem>
-                  <MenuItem value="available">Available Only</MenuItem>
+                  <MenuItem value="">All Status</MenuItem>
+                  <MenuItem value="available">Available</MenuItem>
+                  <MenuItem value="unavailable">Unavailable</MenuItem>
+                  <MenuItem value="maintenance">Maintenance</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
             <Grid item xs={6} md={2}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Capacity</InputLabel>
+                <Select
+                  value={capacityFilter}
+                  onChange={(e) => setCapacityFilter(e.target.value)}
+                  label="Capacity"
+                >
+                  <MenuItem value="">All Sizes</MenuItem>
+                  <MenuItem value="small">Small (1-5)</MenuItem>
+                  <MenuItem value="medium">Medium (6-20)</MenuItem>
+                  <MenuItem value="large">Large (20+)</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} md={1}>
               <Button
                 fullWidth
                 variant="outlined"
@@ -333,15 +420,40 @@ const Resources = () => {
                 Clear
               </Button>
             </Grid>
-            <Grid item xs={12} md={1}>
-              <Box display="flex" alignItems="center">
-                <FilterIcon color="action" sx={{ mr: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  {filteredResources.length} results
-                </Typography>
-              </Box>
-            </Grid>
           </Grid>
+          
+          {/* Sort Controls */}
+          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Sort by:
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                variant="outlined"
+              >
+                <MenuItem value="name">Name</MenuItem>
+                <MenuItem value="type">Type</MenuItem>
+                <MenuItem value="location">Location</MenuItem>
+                <MenuItem value="capacity">Capacity</MenuItem>
+                <MenuItem value="availability">Availability</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 100 }}>
+              <Select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                variant="outlined"
+              >
+                <MenuItem value="asc">Ascending</MenuItem>
+                <MenuItem value="desc">Descending</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography variant="body2" color="text.secondary">
+              {filteredResources.length} of {resources.length} resources
+            </Typography>
+          </Box>
         </Paper>
 
         {/* Loading */}
