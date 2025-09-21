@@ -55,7 +55,7 @@ A full-stack web application for efficient college resource management, providin
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/college-resource-dashboard.git
+   git clone https://github.com/xt67/college-resource-dashboard.git
    cd college-resource-dashboard
    ```
 
