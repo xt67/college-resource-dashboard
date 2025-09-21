@@ -2,6 +2,8 @@
 
 A full-stack web application for efficient college resource management, providing centralized booking and analytics for educational institutions.
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support%20my%20work-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/xt67)
+
 ## 🚀 Features
 
 ### 📋 Core Functionality
@@ -243,6 +245,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support, please open an issue on GitHub or contact the development team.
+
+## ☕ Support This Project
+
+If you find this project helpful, consider buying me a coffee!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support%20my%20work-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/xt67)
 
 ---
 
