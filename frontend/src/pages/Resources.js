@@ -54,8 +54,6 @@ const Resources = () => {
   const [capacityFilter, setCapacityFilter] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
   const [availableOnly, setAvailableOnly] = useState(false);
   
   // Filter options
